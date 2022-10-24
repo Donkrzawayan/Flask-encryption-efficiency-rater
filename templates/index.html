@@ -5,6 +5,13 @@
     <title>Flask Encryption Efficrater</title>
 </head>
 <body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <h1>Upload new File</h1>
     <form method="POST" enctype="multipart/form-data">
         <input type="file" name="file" />
