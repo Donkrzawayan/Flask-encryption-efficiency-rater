@@ -4,6 +4,9 @@ import secrets
 from flask import Flask, render_template, request, flash, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
 
+import time
+
+
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads/'
@@ -20,8 +23,12 @@ def allowed_file(filename):
 
 @app.route('/uploads/<name>')
 def download_file(name):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], name)
-
+    start = time.time()
+    result = send_from_directory(app.config['UPLOAD_FOLDER'], name)
+    end = time.time()
+    print("Download time: ", end - start)
+    #dodac czas szyfrowania
+    return result
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
