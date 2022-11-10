@@ -1,11 +1,10 @@
 import os
 import secrets
-
-from flask import Flask, render_template, request, flash, redirect, url_for, send_from_directory
-from werkzeug.utils import secure_filename
-
 import time
+from os import listdir
 
+from flask import Flask, render_template, request, flash, redirect, send_from_directory
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -27,11 +26,13 @@ def download_file(name):
     result = send_from_directory(app.config['UPLOAD_FOLDER'], name)
     end = time.time()
     print("Download time: ", end - start)
-    #dodac czas szyfrowania
+    # dodac czas szyfrowania
     return result
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    upload_folder = app.config['UPLOAD_FOLDER']
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -44,9 +45,9 @@ def index():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('download_file', name=filename))
-    return render_template('index.html')
+            file.save(os.path.join(upload_folder, filename))
+    filenames = [f for f in listdir(upload_folder) if os.path.isfile(os.path.join(upload_folder, f))]
+    return render_template('uploaded.html', filenames=filenames) if filenames else render_template('index.html')
 
 
 if __name__ == '__main__':

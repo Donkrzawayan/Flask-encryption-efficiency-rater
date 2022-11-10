@@ -12,10 +12,11 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    <h1>Upload new File</h1>
+    <h2>Upload new File</h2>
     <form method="POST" enctype="multipart/form-data">
         <input type="file" name="file" />
         <input type="submit" value="Upload" />
     </form>
+    {% block uploaded %} {% endblock %}
 </body>
 </html>

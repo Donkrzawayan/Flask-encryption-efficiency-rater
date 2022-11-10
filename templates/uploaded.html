@@ -1,0 +1,12 @@
+{% extends 'index.html' %}
+
+{% block uploaded %}
+    <h2>Uploaded files</h2>
+    <table>
+        {% for filename in filenames %}
+           <tr>
+              <td><a href=/uploads/{{filename[0]}}.csv>{{filename[0]}}.csv</a></td>
+           </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
