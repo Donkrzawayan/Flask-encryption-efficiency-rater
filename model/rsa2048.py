@@ -1,25 +1,6 @@
 import rsa as rsa
 
 
-class Bob:
-    def __init__(self):
-        self._public, self._private = rsa.newkeys(2048)
-
-    def get_public(self):
-        return self._public
-
-    def get_private(self):
-        return self._private
-
-    def decode_message(self, message):
-        return rsa.decrypt(message, self._private)
-
-
-class Alice:
-    def encrypt_message(self, message, public):
-        return rsa.encrypt(message, public),
-
-
 class GenerationOfKeys:
     def __init__(self, public, private):
         self._public = public
@@ -32,76 +13,57 @@ class GenerationOfKeys:
         return self._private
 
 
-def encode_file(GenerationOfKeys):
-    data = open('1.txt').read()
-    print(data)
-
+def encode_file(generation_of_keys, input_file):
+    data = open(input_file).read()
     step = 0
-    new_file = open('temp.txt', 'wb+')
+    new_file = open('encoded_' + input_file, 'wb+')
     while 1:
         # Read 128 characters at a time.
         s = data[step * 128:(step + 1) * 128]
-        if not s: break
-        print(s)
+        if not s:
+            break
         # Encrypt with RSA and append the result to list.
         # RSA encryption returns a tuple containing 1 string, so i fetch the string.
-        to_add = rsa.encrypt(s.encode('utf8'), GenerationOfKeys.get_public())
-        print(to_add)
-        new_file.write(to_add)
+        new_file.write(rsa.encrypt(s.encode('utf8'), generation_of_keys.get_public()))
         step += 1
 
-def decode_file(GenerationOfKeys):
-    opened_file = open('temp.txt', mode='rb').read()
-    step = 0
-    new_file = open('wynikowy.txt', 'w+')
-    while 1:
-        # Read 128 characters at a time.
-        s = opened_file[step * 128:(step + 1) * 128]  # max do 127 znakow - dorobić padding
-        if not s: break
-        print(s)
-        # Encrypt with RSA and append the result to list.
-        # RSA encryption returns a tuple containing 1 string, so i fetch the string.
-        to_add = rsa.decrypt(s, GenerationOfKeys.get_private())
-        message = to_add.decode('utf8')
 
-        print(message)
-        new_file.write(message)
+def decode_file(generation_of_keys, input_file):
+    opened_file = open('encoded_' + input_file, mode='rb').read()
+    step = 0
+    new_file = open('decoded_' + input_file, 'w+')
+    while 1:
+        s = opened_file[step * 256:(step + 1) * 256]
+        if not s:
+            break
+        to_add = rsa.decrypt(s, generation_of_keys.get_private())
+        new_file.write(to_add.decode('utf8'))
         step += 1
 
 
 def generate_key():
     public, private = rsa.newkeys(2048)
-    pukey = open('publicKey.key', 'wb')
-    pukey.write(public.save_pkcs1('PEM'))
-    pukey.close()
-    prkey = open('privateKey.key', 'wb')
-    prkey.write(private.save_pkcs1('PEM'))
-    prkey.close()
-
-
-def working_encryption():
-    opened_file = open('temp.txt', mode='rb').read()
-    to_add = rsa.decrypt(opened_file, GenerationOfKeys.get_private())
-    message = to_add.decode('utf8')
-
-    print(message)
-    new_file = open('wynikowy.txt', 'w+')
-    new_file.write(message)
+    pu_key = open('publicKey.key', 'wb')
+    pu_key.write(public.save_pkcs1('PEM'))
+    pu_key.close()
+    pr_key = open('privateKey.key', 'wb')
+    pr_key.write(private.save_pkcs1('PEM'))
+    pr_key.close()
 
 
 if __name__ == '__main__':
     generate_key()
-    with open('privateKey.key', mode='rb') as privatefile:
-        keydata = privatefile.read()
+    with open('privateKey.key', mode='rb') as private_file:
+        key_data_private = private_file.read()
 
-    private_key = rsa.PrivateKey.load_pkcs1(keydata)
+    private_key = rsa.PrivateKey.load_pkcs1(key_data_private)
 
-    with open('publicKey.key', mode='rb') as publicKey:
-        keydata2 = publicKey.read()
+    with open('publicKey.key', mode='rb') as public_file:
+        key_data_public = public_file.read()
 
-    public_key = rsa.PublicKey.load_pkcs1(keydata2)
+    public_key = rsa.PublicKey.load_pkcs1(key_data_public)
 
     GenerationOfKeys = GenerationOfKeys(public_key, private_key)
-    encode_file(GenerationOfKeys)
-    decode_file(GenerationOfKeys)
-    # working_encryption()
+
+    encode_file(GenerationOfKeys, "1csv.csv")
+    decode_file(GenerationOfKeys, "1csv.csv")
