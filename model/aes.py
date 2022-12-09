@@ -1,5 +1,6 @@
 import hashlib
 from base64 import b64encode, b64decode
+import sys
 
 from Cryptodome import Random
 from Cryptodome.Cipher import AES
@@ -9,8 +10,6 @@ class AESCipher(object):
     def __init__(self, key):
         self.block_size = AES.block_size
         self.key = hashlib.sha256(key.encode()).digest()
-
-
 
     def __pad(self, plain_text):
         number_of_bytes_to_pad = self.block_size - len(plain_text) % self.block_size
@@ -39,8 +38,6 @@ class AESCipher(object):
         plain_text = cipher.decrypt(encrypted_text[self.block_size:]).decode("utf-8")
         return self.__unpad(plain_text)
 
-
-import sys
 
 if __name__ == "__main__":
     print(sys.argv[1])
