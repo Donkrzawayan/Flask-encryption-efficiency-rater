@@ -28,6 +28,20 @@ def encode_file(generation_of_keys, input_file):
         step += 1
 
 
+def encode_file_yield(generation_of_keys, input_file):
+    data = open(input_file).read()
+    step = 0
+    while 1:
+        # Read 128 characters at a time.
+        s = data[step * 128:(step + 1) * 128]
+        if not s:
+            break
+        # Encrypt with RSA and append the result to list.
+        # RSA encryption returns a tuple containing 1 string, so i fetch the string.
+        yield rsa.encrypt(s.encode('utf8'), generation_of_keys.get_public())
+        step += 1
+
+
 def decode_file(generation_of_keys, input_file):
     opened_file = open('encoded_' + input_file, mode='rb').read()
     step = 0
@@ -38,6 +52,18 @@ def decode_file(generation_of_keys, input_file):
             break
         to_add = rsa.decrypt(s, generation_of_keys.get_private())
         new_file.write(to_add.decode('utf8'))
+        step += 1
+
+
+def decode_file_yield(generation_of_keys, input_file):
+    opened_file = open('encoded_' + input_file, mode='rb').read()
+    step = 0
+    while 1:
+        s = opened_file[step * 256:(step + 1) * 256]
+        if not s:
+            break
+        to_add = rsa.decrypt(s, generation_of_keys.get_private())
+        yield to_add.decode('utf8')
         step += 1
 
 

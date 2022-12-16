@@ -3,8 +3,11 @@ import secrets
 import time
 from os import listdir
 
-from flask import Flask, render_template, request, flash, redirect, send_from_directory
+import rsa
+from flask import Flask, render_template, request, flash, redirect, send_from_directory, Response, stream_with_context
 from werkzeug.utils import secure_filename
+
+from model.rsa2048 import generate_key, GenerationOfKeys, encode_file_yield, decode_file_yield, encode_file
 
 app = Flask(__name__)
 
@@ -48,6 +51,32 @@ def index():
             file.save(os.path.join(upload_folder, filename))
     filenames = [f for f in listdir(upload_folder) if os.path.isfile(os.path.join(upload_folder, f))]
     return render_template('uploaded.html', filenames=filenames) if filenames else render_template('index.html')
+
+
+@app.route('/stream')
+def streamed_response():
+    filename = "a.csv"
+    generate_key()
+    with open('privateKey.key', mode='rb') as private_file:
+        key_data_private = private_file.read()
+
+    private_key = rsa.PrivateKey.load_pkcs1(key_data_private)
+
+    with open('publicKey.key', mode='rb') as public_file:
+        key_data_public = public_file.read()
+
+    public_key = rsa.PublicKey.load_pkcs1(key_data_public)
+
+    generationOfKeys = GenerationOfKeys(public_key, private_key)
+
+    encode_file(generationOfKeys, filename)
+    decoded = decode_file_yield(generationOfKeys, filename)
+    return Response(
+        stream_with_context(decoded),
+        headers={
+            'Content-Disposition': f'attachment; filename={filename}'
+        }
+    )
 
 
 if __name__ == '__main__':
