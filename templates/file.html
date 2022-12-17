@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flask Encryption Efficrater - {{ filename }}</title>
+</head>
+<body>
+    <h1><a href=/ >Flask Encryption Efficrater</a></h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <h2>{{ filename }} - <a href=/file/{{ filename }}/download >Download</a></h2>
+    <form method=post action="/file/{{ filename }}" enctype="multipart/form-data" >
+        Private key: <input type="file" name="key">
+        <select name="decode_types">
+            <option value="">Choose one option</option>
+            <option value="rsa">RSA-2048</option>
+            <option value="rsa_stream">RSA-2048 stream</option>
+        </select>
+        <input type=submit>
+    </form>
+</body>
+</html>

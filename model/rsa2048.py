@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import rsa as rsa
 
 
@@ -42,7 +44,7 @@ def encode_file_yield(generation_of_keys, input_file):
         step += 1
 
 
-def decode_file(generation_of_keys, input_file):
+def decode_file1(generation_of_keys, input_file):
     opened_file = open('encoded_' + input_file, mode='rb').read()
     step = 0
     new_file = open('decoded_' + input_file, 'w+')
@@ -53,6 +55,24 @@ def decode_file(generation_of_keys, input_file):
         to_add = rsa.decrypt(s, generation_of_keys.get_private())
         new_file.write(to_add.decode('utf8'))
         step += 1
+
+
+def decode_file(private_key, input_file):
+    private_key = rsa.PrivateKey.load_pkcs1(private_key.read())
+    path = Path(input_file)
+    decoded_filename = path.with_stem(f'decoded_{path.stem}')
+    step = 0
+    opened_file = open(input_file, mode='rb').read()
+    with open(decoded_filename, 'w+') as decoded_file:
+        while True:
+            s = opened_file[step * 256:(step + 1) * 256]
+            if not s:
+                break
+            to_add = rsa.decrypt(s, private_key)
+            decoded_file.write(to_add.decode('utf8'))
+            step += 1
+
+    return decoded_file.name
 
 
 def decode_file_yield(generation_of_keys, input_file):
@@ -92,4 +112,4 @@ if __name__ == '__main__':
     GenerationOfKeys = GenerationOfKeys(public_key, private_key)
 
     encode_file(GenerationOfKeys, "1csv.csv")
-    decode_file(GenerationOfKeys, "1csv.csv")
+    decode_file1(GenerationOfKeys, "1csv.csv")
