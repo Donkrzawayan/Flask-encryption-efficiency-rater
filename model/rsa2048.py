@@ -3,19 +3,7 @@ from pathlib import Path
 import rsa as rsa
 
 
-class GenerationOfKeys:
-    def __init__(self, public, private):
-        self._public = public
-        self._private = private
-
-    def get_public(self):
-        return self._public
-
-    def get_private(self):
-        return self._private
-
-
-def encode_file(generation_of_keys, input_file):
+def encode_file(public_key, input_file):
     data = open(input_file).read()
     step = 0
     new_file = open('encoded_' + input_file, 'wb+')
@@ -26,11 +14,11 @@ def encode_file(generation_of_keys, input_file):
             break
         # Encrypt with RSA and append the result to list.
         # RSA encryption returns a tuple containing 1 string, so i fetch the string.
-        new_file.write(rsa.encrypt(s.encode('utf8'), generation_of_keys.get_public()))
+        new_file.write(rsa.encrypt(s.encode('utf8'), public_key))
         step += 1
 
 
-def encode_file_yield(generation_of_keys, input_file):
+def encode_file_yield(public_key, input_file):
     data = open(input_file).read()
     step = 0
     while 1:
@@ -40,11 +28,11 @@ def encode_file_yield(generation_of_keys, input_file):
             break
         # Encrypt with RSA and append the result to list.
         # RSA encryption returns a tuple containing 1 string, so i fetch the string.
-        yield rsa.encrypt(s.encode('utf8'), generation_of_keys.get_public())
+        yield rsa.encrypt(s.encode('utf8'), public_key)
         step += 1
 
 
-def decode_file1(generation_of_keys, input_file):
+def decode_file1(private_key, input_file):
     opened_file = open('encoded_' + input_file, mode='rb').read()
     step = 0
     new_file = open('decoded_' + input_file, 'w+')
@@ -52,7 +40,7 @@ def decode_file1(generation_of_keys, input_file):
         s = opened_file[step * 256:(step + 1) * 256]
         if not s:
             break
-        to_add = rsa.decrypt(s, generation_of_keys.get_private())
+        to_add = rsa.decrypt(s, private_key)
         new_file.write(to_add.decode('utf8'))
         step += 1
 
@@ -110,7 +98,5 @@ if __name__ == '__main__':
 
     public_key = rsa.PublicKey.load_pkcs1(key_data_public)
 
-    GenerationOfKeys = GenerationOfKeys(public_key, private_key)
-
-    encode_file(GenerationOfKeys, "1csv.csv")
-    decode_file1(GenerationOfKeys, "1csv.csv")
+    encode_file(public_key, "1csv.csv")
+    decode_file1(private_key, "1csv.csv")
