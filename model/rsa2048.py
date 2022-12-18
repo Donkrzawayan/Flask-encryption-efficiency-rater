@@ -75,14 +75,15 @@ def decode_file(private_key, input_file):
     return decoded_file.name
 
 
-def decode_file_yield(generation_of_keys, input_file):
-    opened_file = open('encoded_' + input_file, mode='rb').read()
+def decode_file_yield(private_key, input_file):
+    private_key = rsa.PrivateKey.load_pkcs1(private_key.read())
+    opened_file = open(input_file, mode='rb').read()
     step = 0
     while 1:
         s = opened_file[step * 256:(step + 1) * 256]
         if not s:
             break
-        to_add = rsa.decrypt(s, generation_of_keys.get_private())
+        to_add = rsa.decrypt(s, private_key)
         yield to_add.decode('utf8')
         step += 1
 

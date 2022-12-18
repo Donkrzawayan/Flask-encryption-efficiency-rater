@@ -1,11 +1,9 @@
 import os
 import secrets
 
-import rsa
-from flask import Flask, render_template, request, flash, redirect, send_from_directory, Response, stream_with_context
+from flask import Flask, render_template, request, flash, redirect, send_from_directory
 from werkzeug.utils import secure_filename
 
-from model import rsa2048
 from model.DecodeManager import DecodeManager
 
 app = Flask(__name__)
@@ -66,32 +64,6 @@ def index():
             file.save(os.path.join(upload_folder, filename))
     filenames = [f for f in os.listdir(upload_folder) if os.path.isfile(os.path.join(upload_folder, f))]
     return render_template('uploaded.html', filenames=filenames) if filenames else render_template('index.html')
-
-
-@app.route('/stream')
-def streamed_response():
-    filename = 'uploads/Binance_ADAUSDT_d.csv'
-    rsa2048.generate_key()
-    with open('privateKey.key', mode='rb') as private_file:
-        key_data_private = private_file.read()
-
-    private_key = rsa.PrivateKey.load_pkcs1(key_data_private)
-
-    with open('publicKey.key', mode='rb') as public_file:
-        key_data_public = public_file.read()
-
-    public_key = rsa.PublicKey.load_pkcs1(key_data_public)
-
-    generationOfKeys = rsa2048.GenerationOfKeys(public_key, private_key)
-
-    decoded = rsa2048.encode_file_yield(generationOfKeys, filename)
-    # decoded = rsa2048.decode_file_yield(generationOfKeys, filename)
-    return Response(
-        stream_with_context(decoded),
-        headers={
-            'Content-Disposition': f'attachment; filename={filename}'
-        }
-    )
 
 
 if __name__ == '__main__':
