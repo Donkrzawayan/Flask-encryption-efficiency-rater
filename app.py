@@ -6,6 +6,7 @@ from flask import Flask, render_template, request, flash, redirect, send_from_di
 from werkzeug.utils import secure_filename
 
 from model import rsa2048
+from model.DecodeManager import DecodeManager
 
 app = Flask(__name__)
 
@@ -31,16 +32,6 @@ def download_file(name):
     return send_from_directory(app.config['UPLOAD_FOLDER'], name)
 
 
-def _decode_rsa(name, key):
-    filename = rsa2048.decode_file(key, os.path.join(app.config['UPLOAD_FOLDER'], name))
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-
-decode_types = {
-    'rsa': _decode_rsa
-}
-
-
 @app.route('/file/<name>', methods=['POST'])
 def decode(name):
     if 'key' not in request.files:
@@ -54,7 +45,7 @@ def decode(name):
         flash('Corrupted file')
         return redirect(f'/file/{name}')
     select = request.form['decode_types']
-    return decode_types[select](name, key)
+    return DecodeManager(app.config['UPLOAD_FOLDER']).caller(select, name, key)
 
 
 @app.route('/', methods=['GET', 'POST'])
