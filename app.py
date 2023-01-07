@@ -20,6 +20,26 @@ def _allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def _get_key(redirect_path):
+    if 'key' not in request.files:
+        flash('No file part')
+        return redirect(redirect_path)
+    key = request.files['key']
+    if key.filename == '':
+        flash('No selected file')
+        return redirect(redirect_path)
+    if not key:
+        flash('Corrupted file')
+        return redirect(redirect_path)
+    return key
+
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    select = request.form['encode_types']
+    return render_template('upload_standard.html')
+
+
 @app.route('/file/<name>')
 def uploaded_file(name):
     return render_template('file.html', filename=name)
@@ -32,16 +52,7 @@ def download_file(name):
 
 @app.route('/file/<name>', methods=['POST'])
 def decode(name):
-    if 'key' not in request.files:
-        flash('No file part')
-        return redirect(f'/file/{name}')
-    key = request.files['key']
-    if key.filename == '':
-        flash('No selected file')
-        return redirect(f'/file/{name}')
-    if not key:
-        flash('Corrupted file')
-        return redirect(f'/file/{name}')
+    key = _get_key(f'/file/{name}')
     select = request.form['decode_types']
     return DecodeManager(app.config['UPLOAD_FOLDER']).caller(select, name, key)
 

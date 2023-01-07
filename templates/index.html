@@ -18,6 +18,14 @@
         <input type="file" name="file" />
         <input type="submit" value="Upload" />
     </form>
+    <h2>Encode and upload new File</h2>
+    <form method="POST" enctype="multipart/form-data" action="/upload">
+        <select name="encode_types">
+            <option value="standard">Standard</option>
+            <option value="stream">Stream</option>
+        </select>
+        <input type="submit" value="Upload" />
+    </form>
     {% block uploaded %} {% endblock %}
 </body>
 </html>
