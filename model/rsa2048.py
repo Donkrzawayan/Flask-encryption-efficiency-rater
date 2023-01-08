@@ -24,9 +24,10 @@ def encode_file(public_key, input_file):
 
 
 def encode_file_yield(public_key, input_file):
+    public_key = rsa.PublicKey.load_pkcs1(public_key.read())
     data = open(input_file).read()
     step = 0
-    while 1:
+    while True:
         # Read 128 characters at a time.
         s = data[step * 128:(step + 1) * 128]
         if not s:
@@ -70,10 +71,10 @@ def decode_file(private_key, input_file):
 
 def decode_file_yield(private_key, input_file):
     private_key = rsa.PrivateKey.load_pkcs1(private_key.read())
-    opened_file = open(input_file, mode='rb').read()
+    data = open(input_file, mode='rb').read()
     step = 0
-    while 1:
-        s = opened_file[step * 256:(step + 1) * 256]
+    while True:
+        s = data[step * 256:(step + 1) * 256]
         if not s:
             break
         to_add = rsa.decrypt(s, private_key)

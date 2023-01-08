@@ -11,6 +11,7 @@ class DecodeManager:
         self.upload_folder = upload_folder
         self.decode_types = {
             'encode_rsa': self._encode_rsa,
+            'encode_rsa_stream': self._encode_rsa_stream,
             'decode_rsa': self._decode_rsa,
             'decode_rsa_stream': self._decode_rsa_stream
         }
@@ -22,6 +23,15 @@ class DecodeManager:
         filename = rsa2048.encode_file(key, path.join(self.upload_folder, name))
         filename = Path(filename).name
         return send_from_directory(self.upload_folder, filename)
+
+    def _encode_rsa_stream(self, name, key):
+        encoded = rsa2048.encode_file_yield(key, path.join(self.upload_folder, name))
+        return Response(
+            stream_with_context(encoded),
+            headers={
+                'Content-Disposition': f'attachment; filename={name}'
+            }
+        )
 
     def _decode_rsa(self, name, key):
         filename = rsa2048.decode_file(key, path.join(self.upload_folder, name))
