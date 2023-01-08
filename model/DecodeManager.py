@@ -15,7 +15,8 @@ class DecodeManager:
             'encode_rsa_stream': self._encode_rsa_stream,
             'encode_aes': self._encode_aes,
             'decode_rsa': self._decode_rsa,
-            'decode_rsa_stream': self._decode_rsa_stream
+            'decode_rsa_stream': self._decode_rsa_stream,
+            'decode_aes': self._decode_aes
         }
 
     def caller(self, key, *args):
@@ -46,6 +47,18 @@ class DecodeManager:
         with open(encoded_filename, 'wb+') as encoded_file:
             encoded_file.write(bytes(encrypted_data, 'utf-8'))
         return send_from_directory(self.upload_folder, encoded_filename.name)
+
+    def _decode_aes(self, name, key):
+        key = str(rsa.PublicKey.load_pkcs1(key.read()))
+        filename = path.join(self.upload_folder, name)
+        data = open(filename, encoding='utf-8').read()
+        cipher = aes.AESCipher(key)
+        decrypted_data = cipher.decrypt(data)
+        filename = Path(filename)
+        decoded_filename = filename.with_stem(f'decoded_{filename.stem}')
+        with open(decoded_filename, 'wb+') as decoded_file:
+            decoded_file.write(bytes(decrypted_data, 'utf-8'))
+        return send_from_directory(self.upload_folder, decoded_filename.name)
 
     def _decode_rsa(self, name, key):
         filename = rsa2048.decode_file(key, path.join(self.upload_folder, name))
