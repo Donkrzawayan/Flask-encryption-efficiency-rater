@@ -1,9 +1,10 @@
 from os import path
 from pathlib import Path
 
+import rsa
 from flask import send_from_directory, Response, stream_with_context
 
-from model import rsa2048
+from model import rsa2048, aes
 
 
 class DecodeManager:
@@ -12,6 +13,7 @@ class DecodeManager:
         self.decode_types = {
             'encode_rsa': self._encode_rsa,
             'encode_rsa_stream': self._encode_rsa_stream,
+            'encode_aes': self._encode_aes,
             'decode_rsa': self._decode_rsa,
             'decode_rsa_stream': self._decode_rsa_stream
         }
@@ -32,6 +34,18 @@ class DecodeManager:
                 'Content-Disposition': f'attachment; filename={name}'
             }
         )
+
+    def _encode_aes(self, name, key):
+        key = str(rsa.PublicKey.load_pkcs1(key.read()))
+        filename = path.join(self.upload_folder, name)
+        data = open(filename).read()
+        cipher = aes.AESCipher(key)
+        encrypted_data = cipher.encrypt(data)
+        filename = Path(filename)
+        encoded_filename = filename.with_stem(f'encoded_{filename.stem}')
+        with open(encoded_filename, 'wb+') as encoded_file:
+            encoded_file.write(bytes(encrypted_data, 'utf-8'))
+        return send_from_directory(self.upload_folder, encoded_filename.name)
 
     def _decode_rsa(self, name, key):
         filename = rsa2048.decode_file(key, path.join(self.upload_folder, name))

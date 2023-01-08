@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import rsa as rsa
+import rsa
 
 
 def encode_file(public_key, input_file):
@@ -35,19 +35,6 @@ def encode_file_yield(public_key, input_file):
         # Encrypt with RSA and append the result to list.
         # RSA encryption returns a tuple containing 1 string, so i fetch the string.
         yield rsa.encrypt(s.encode('utf8'), public_key)
-        step += 1
-
-
-def decode_file1(private_key, input_file):
-    opened_file = open('encoded_' + input_file, mode='rb').read()
-    step = 0
-    new_file = open('decoded_' + input_file, 'w+')
-    while 1:
-        s = opened_file[step * 256:(step + 1) * 256]
-        if not s:
-            break
-        to_add = rsa.decrypt(s, private_key)
-        new_file.write(to_add.decode('utf8'))
         step += 1
 
 
@@ -104,5 +91,5 @@ if __name__ == '__main__':
 
     public_key = rsa.PublicKey.load_pkcs1(key_data_public)
 
-    encode_file(public_key, "1csv.csv")
-    decode_file1(private_key, "1csv.csv")
+    # encode_file(public_key, "1csv.csv")
+    # decode_file1(private_key, "1csv.csv")
