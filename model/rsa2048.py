@@ -4,18 +4,23 @@ import rsa as rsa
 
 
 def encode_file(public_key, input_file):
+    public_key = rsa.PublicKey.load_pkcs1(public_key.read())
+    path = Path(input_file)
+    encoded_filename = path.with_stem(f'encoded_{path.stem}')
     data = open(input_file).read()
     step = 0
-    new_file = open('encoded_' + input_file, 'wb+')
-    while 1:
-        # Read 128 characters at a time.
-        s = data[step * 128:(step + 1) * 128]
-        if not s:
-            break
-        # Encrypt with RSA and append the result to list.
-        # RSA encryption returns a tuple containing 1 string, so i fetch the string.
-        new_file.write(rsa.encrypt(s.encode('utf8'), public_key))
-        step += 1
+    with open(encoded_filename, 'wb+') as encoded_file:
+        while True:
+            # Read 128 characters at a time.
+            s = data[step * 128:(step + 1) * 128]
+            if not s:
+                break
+            # Encrypt with RSA and append the result to list.
+            # RSA encryption returns a tuple containing 1 string, so i fetch the string.
+            encoded_file.write(rsa.encrypt(s.encode('utf8'), public_key))
+            step += 1
+
+    return encoded_file.name
 
 
 def encode_file_yield(public_key, input_file):
@@ -49,11 +54,11 @@ def decode_file(private_key, input_file):
     private_key = rsa.PrivateKey.load_pkcs1(private_key.read())
     path = Path(input_file)
     decoded_filename = path.with_stem(f'decoded_{path.stem}')
+    data = open(input_file, mode='rb').read()
     step = 0
-    opened_file = open(input_file, mode='rb').read()
     with open(decoded_filename, 'w+') as decoded_file:
         while True:
-            s = opened_file[step * 256:(step + 1) * 256]
+            s = data[step * 256:(step + 1) * 256]
             if not s:
                 break
             to_add = rsa.decrypt(s, private_key)

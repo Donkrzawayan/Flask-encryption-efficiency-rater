@@ -15,11 +15,12 @@
     {% endwith %}
     <h2>{{ filename }} - <a href=/file/{{ filename }}/download >Download</a></h2>
     <form method=post action="/file/{{ filename }}" enctype="multipart/form-data" >
-        Private key: <input type="file" name="key">
+        Key: <input type="file" name="key">
         <select name="decode_types">
             <option value="">Choose one option</option>
-            <option value="rsa">RSA-2048</option>
-            <option value="rsa_stream">RSA-2048 stream</option>
+            <option value="encode_rsa">Encode RSA-2048</option>
+            <option value="decode_rsa">Decode RSA-2048</option>
+            <option value="decode_rsa_stream">DecodeRSA-2048 stream</option>
         </select>
         <input type=submit value="Download">
     </form>
