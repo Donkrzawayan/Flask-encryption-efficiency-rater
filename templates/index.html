@@ -13,19 +13,29 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    <h2>Upload new File</h2>
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" />
-        <input type="submit" value="Upload" />
-    </form>
-    <h2>Encode and upload new File</h2>
-    <form method="POST" enctype="multipart/form-data" action="/upload">
-        <select name="encode_types">
-            <option value="standard">Standard</option>
-            <option value="stream">Stream</option>
-        </select>
-        <input type="submit" value="Upload" />
-    </form>
+    <div>
+        <h2>Upload new File</h2>
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="file" />
+            <input type="submit" value="Upload" />
+        </form>
+    </div>
+    <div>
+        <h2>Generate keys for RSA</h2>
+        <form method="post" action="/generate_keys">
+            <button onclick="">Download keys.zip</button>
+        </form>
+    </div>
+    <div>
+        <h2>Encode and upload new File</h2>
+        <form method="post" enctype="multipart/form-data" action="/upload">
+            <select name="encode_types">
+                <option value="standard">Standard</option>
+                <option value="stream">Stream</option>
+            </select>
+            <input type="submit" value="Upload" />
+        </form>
+    </div>
     {% block uploaded %} {% endblock %}
 </body>
 </html>

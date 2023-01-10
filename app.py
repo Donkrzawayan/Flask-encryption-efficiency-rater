@@ -1,9 +1,10 @@
 import os
 import secrets
 
-from flask import Flask, render_template, request, flash, redirect, send_from_directory
+from flask import Flask, render_template, request, flash, redirect, send_from_directory, send_file
 from werkzeug.utils import secure_filename
 
+from model import rsa2048
 from model.DecodeManager import DecodeManager
 
 app = Flask(__name__)
@@ -32,6 +33,17 @@ def _get_key(redirect_path):
         flash('Corrupted file')
         return redirect(redirect_path)
     return key
+
+
+@app.route('/generate_keys', methods=['POST'])
+def generate_keys():
+    zip = rsa2048.generate_keys()
+    return send_file(
+        zip,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name='keys.zip'
+    )
 
 
 @app.route('/upload', methods=['POST'])

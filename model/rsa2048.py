@@ -1,4 +1,6 @@
+import io
 from pathlib import Path
+from zipfile import ZipFile
 
 import rsa
 
@@ -69,27 +71,11 @@ def decode_file_yield(private_key, input_file):
         step += 1
 
 
-def generate_key():
+def generate_keys():
     public, private = rsa.newkeys(2048)
-    pu_key = open('publicKey.key', 'wb')
-    pu_key.write(public.save_pkcs1('PEM'))
-    pu_key.close()
-    pr_key = open('privateKey.key', 'wb')
-    pr_key.write(private.save_pkcs1('PEM'))
-    pr_key.close()
-
-
-if __name__ == '__main__':
-    generate_key()
-    with open('privateKey.key', mode='rb') as private_file:
-        key_data_private = private_file.read()
-
-    private_key = rsa.PrivateKey.load_pkcs1(key_data_private)
-
-    with open('publicKey.key', mode='rb') as public_file:
-        key_data_public = public_file.read()
-
-    public_key = rsa.PublicKey.load_pkcs1(key_data_public)
-
-    # encode_file(public_key, "1csv.csv")
-    # decode_file1(private_key, "1csv.csv")
+    data = io.BytesIO()
+    with ZipFile(data, mode='w') as z:
+        z.writestr('public.key', public.save_pkcs1('PEM').decode('utf8'))
+        z.writestr('private.key', private.save_pkcs1('PEM').decode('utf8'))
+    data.seek(0)
+    return data
