@@ -1,5 +1,6 @@
 import os
 import secrets
+import time
 
 from flask import Flask, render_template, request, flash, redirect, send_from_directory, send_file
 from werkzeug.utils import secure_filename
@@ -66,7 +67,11 @@ def download_file(name):
 def decode(name):
     key = _get_key(f'/file/{name}')
     select = request.form['decode_types']
-    return DecodeManager(app.config['UPLOAD_FOLDER']).caller(select, name, key)
+    start = time.perf_counter()
+    file = DecodeManager(app.config['UPLOAD_FOLDER']).caller(select, name, key)
+    end = time.perf_counter()
+    flash(f'{name} processing time: {end-start}\n')
+    return file
 
 
 @app.route('/', methods=['GET', 'POST'])
