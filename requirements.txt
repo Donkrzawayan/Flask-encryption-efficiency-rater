@@ -3,3 +3,4 @@ Werkzeug
 rsa
 pycryptodomex
 MarkupSafe
+Flask-Session

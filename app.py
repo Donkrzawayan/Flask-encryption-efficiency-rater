@@ -2,11 +2,13 @@ import os
 import secrets
 import time
 
-from flask import Flask, render_template, request, flash, redirect, send_from_directory, send_file
+from flask import Flask, render_template, request, flash, redirect, send_from_directory, send_file, session
+from flask_session import Session
 from werkzeug.utils import secure_filename
 
 from model import rsa2048
-from model.DecodeManager import DecodeManager
+from model.DownloadManager import DownloadManager
+from model.UploadManager import UploadManager
 
 app = Flask(__name__)
 
@@ -36,6 +38,22 @@ def _get_key(redirect_path):
     return key
 
 
+def _get_file():
+    # check if the post request has the file part
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+    file = request.files['file']
+    # If the user does not select a file, the browser submits an empty file without a filename.
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(request.url)
+    if file and _allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    return filename
+
+
 @app.route('/generate_keys', methods=['POST'])
 def generate_keys():
     zip = rsa2048.generate_keys()
@@ -47,10 +65,24 @@ def generate_keys():
     )
 
 
+@app.route('/upload_file', methods=['POST'])
+def upload_file():
+    select = session['select']
+    key = session['key']
+    file = _get_file()
+    start = time.perf_counter()
+    filename = UploadManager(app.config['UPLOAD_FOLDER']).caller(select, file, key)
+    end = time.perf_counter()
+    flash(f'{file} processing time: {end - start}\n')
+    return redirect(f'/file/{filename}')
+
+
 @app.route('/upload', methods=['POST'])
 def upload():
-    select = request.form['encode_types']
-    return render_template('upload_standard.html')
+    session['select'] = request.form['encrypt_types']
+    session['key'] = _get_key('/').read()
+
+    return render_template('upload.html')
 
 
 @app.route('/file/<name>')
@@ -66,9 +98,9 @@ def download_file(name):
 @app.route('/file/<name>', methods=['POST'])
 def decode(name):
     key = _get_key(f'/file/{name}')
-    select = request.form['decode_types']
+    select = request.form['encrypt_types']
     start = time.perf_counter()
-    file = DecodeManager(app.config['UPLOAD_FOLDER']).caller(select, name, key)
+    file = DownloadManager(app.config['UPLOAD_FOLDER']).caller(select, name, key)
     end = time.perf_counter()
     flash(f'{name} processing time: {end-start}\n')
     return file
@@ -78,21 +110,12 @@ def decode(name):
 def index():
     upload_folder = app.config['UPLOAD_FOLDER']
     if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # If the user does not select a file, the browser submits an empty file without a filename.
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and _allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(upload_folder, filename))
+        _get_file()
     filenames = [f for f in os.listdir(upload_folder) if os.path.isfile(os.path.join(upload_folder, f))]
     return render_template('uploaded.html', filenames=filenames) if filenames else render_template('index.html')
 
 
 if __name__ == '__main__':
+    app.config['SESSION_TYPE'] = 'filesystem'
+    Session(app)
     app.run(debug=True)

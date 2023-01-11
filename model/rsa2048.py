@@ -6,7 +6,7 @@ import rsa
 
 
 def encode_file(public_key, input_file):
-    public_key = rsa.PublicKey.load_pkcs1(public_key.read())
+    public_key = rsa.PublicKey.load_pkcs1(public_key)
     path = Path(input_file)
     encoded_filename = path.with_stem(f'encoded_{path.stem}')
     data = open(input_file).read()

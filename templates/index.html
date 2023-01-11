@@ -5,16 +5,7 @@
     <title>Flask Encryption Efficrater</title>
 </head>
 <body>
-    <h1><a href=/ >Flask Encryption Efficrater</a></h1>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class=flashes>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+    {% include 'header.html' %}
     <div>
         <h2>Upload new File</h2>
         <form method="post" enctype="multipart/form-data">
@@ -25,16 +16,14 @@
     <div>
         <h2>Generate keys for RSA</h2>
         <form method="post" action="/generate_keys">
-            <button onclick="">Download keys.zip</button>
+            <button>Download keys.zip</button>
         </form>
     </div>
     <div>
         <h2>Encode and upload new File</h2>
         <form method="post" enctype="multipart/form-data" action="/upload">
-            <select name="encode_types">
-                <option value="standard">Standard</option>
-                <option value="stream">Stream</option>
-            </select>
+            Key: <input type="file" name="key">
+            {% include 'select.html' %}
             <input type="submit" value="Upload" />
         </form>
     </div>

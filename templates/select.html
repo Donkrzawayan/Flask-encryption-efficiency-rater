@@ -1,0 +1,12 @@
+{% block body %}
+    <select name="encrypt_types">
+        <option value="">Choose one option</option>
+        <option value="encode_rsa">Encode RSA-2048</option>
+        <option value="encode_rsa_stream">Encode RSA-2048 stream</option>
+        <option value="encode_aes">Encode AES</option>
+        <option value="encode_aes_stream">Encode AES stream</option>
+        <option value="decode_rsa">Decode RSA-2048</option>
+        <option value="decode_rsa_stream">Decode RSA-2048 stream</option>
+        <option value="decode_aes">Decode AES</option>
+    </select>
+{% endblock %}

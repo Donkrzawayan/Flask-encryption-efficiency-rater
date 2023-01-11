@@ -8,7 +8,7 @@ from flask import send_from_directory, Response, stream_with_context, flash
 from model import rsa2048, aes
 
 
-class DecodeManager:
+class DownloadManager:
     def __init__(self, upload_folder):
         self.upload_folder = upload_folder
         self.decode_types = {
@@ -25,7 +25,7 @@ class DecodeManager:
 
     def _encode_rsa(self, name, key):
         start = time.perf_counter()
-        filename = rsa2048.encode_file(key, path.join(self.upload_folder, name))
+        filename = rsa2048.encode_file(key.read(), path.join(self.upload_folder, name))
         end = time.perf_counter()
         filename = Path(filename).name
         flash(f'{name} encoding time: {end - start}')
