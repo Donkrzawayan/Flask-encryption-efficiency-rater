@@ -72,7 +72,7 @@ class DownloadManager:
 
     def _decode_rsa(self, name, key):
         start = time.perf_counter()
-        filename = rsa2048.decode_file(key, path.join(self.upload_folder, name))
+        filename = rsa2048.decode_file(key.read(), path.join(self.upload_folder, name))
         end = time.perf_counter()
         filename = Path(filename).name
         flash(f'{name} decoding time: {end - start}')

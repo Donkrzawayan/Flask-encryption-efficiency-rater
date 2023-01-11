@@ -41,7 +41,7 @@ def encode_file_yield(public_key, input_file):
 
 
 def decode_file(private_key, input_file):
-    private_key = rsa.PrivateKey.load_pkcs1(private_key.read())
+    private_key = rsa.PrivateKey.load_pkcs1(private_key)
     path = Path(input_file)
     decoded_filename = path.with_stem(f'decoded_{path.stem}')
     data = open(input_file, mode='rb').read()
