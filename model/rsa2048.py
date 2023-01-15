@@ -9,7 +9,7 @@ def encode_file(public_key, input_file):
     public_key = rsa.PublicKey.load_pkcs1(public_key)
     path = Path(input_file)
     encoded_filename = path.with_stem(f'encoded_{path.stem}')
-    data = open(input_file).read()
+    data = open(input_file, 'rb').read()
     step = 0
     with open(encoded_filename, 'wb+') as encoded_file:
         while True:
@@ -19,7 +19,7 @@ def encode_file(public_key, input_file):
                 break
             # Encrypt with RSA and append the result to list.
             # RSA encryption returns a tuple containing 1 string, so i fetch the string.
-            encoded_file.write(rsa.encrypt(s.encode('utf8'), public_key))
+            encoded_file.write(rsa.encrypt(s, public_key))
             step += 1
 
     return encoded_file.name
@@ -27,7 +27,7 @@ def encode_file(public_key, input_file):
 
 def encode_file_yield(public_key, input_file):
     public_key = rsa.PublicKey.load_pkcs1(public_key.read())
-    data = open(input_file).read()
+    data = open(input_file, 'rb').read()
     step = 0
     while True:
         # Read 128 characters at a time.
@@ -36,7 +36,7 @@ def encode_file_yield(public_key, input_file):
             break
         # Encrypt with RSA and append the result to list.
         # RSA encryption returns a tuple containing 1 string, so i fetch the string.
-        yield rsa.encrypt(s.encode('utf8'), public_key)
+        yield rsa.encrypt(s, public_key)
         step += 1
 
 
@@ -46,13 +46,13 @@ def decode_file(private_key, input_file):
     decoded_filename = path.with_stem(f'decoded_{path.stem}')
     data = open(input_file, mode='rb').read()
     step = 0
-    with open(decoded_filename, 'w+') as decoded_file:
+    with open(decoded_filename, 'wb+') as decoded_file:
         while True:
             s = data[step * 256:(step + 1) * 256]
             if not s:
                 break
             to_add = rsa.decrypt(s, private_key)
-            decoded_file.write(to_add.decode('utf8'))
+            decoded_file.write(to_add)
             step += 1
 
     return decoded_file.name
@@ -67,7 +67,7 @@ def decode_file_yield(private_key, input_file):
         if not s:
             break
         to_add = rsa.decrypt(s, private_key)
-        yield to_add.decode('utf8')
+        yield to_add
         step += 1
 
 
