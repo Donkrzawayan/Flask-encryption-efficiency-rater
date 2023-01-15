@@ -57,7 +57,6 @@ def _get_file():
     return filename
 
 
-
 @app.route('/generate_keys', methods=['POST'])
 def generate_keys():
     zip = rsa2048.generate_keys()
@@ -106,7 +105,7 @@ def decode(name):
     start = time.perf_counter()
     file = DownloadManager(app.config['UPLOAD_FOLDER']).caller(select, name, key)
     end = time.perf_counter()
-    flash(f'{name} processing time: {end-start}\n')
+    flash(f'{name} processing time: {end - start}\n')
     return file
 
 
