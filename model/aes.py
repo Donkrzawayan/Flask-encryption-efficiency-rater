@@ -32,7 +32,7 @@ class AESCipher(object):
         return b64encode(iv + encrypted_text).decode("utf-8")
 
     def encode_file_yield(self, plain_text):
-        plain_text = self.__pad(plain_text)
+        data = self.__pad(plain_text)
         iv = Random.new().read(self.block_size)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         step = 0
@@ -43,7 +43,7 @@ class AESCipher(object):
                 break
             # Encrypt with RSA and append the result to list.
             # RSA encryption returns a tuple containing 1 string, so i fetch the string.
-            yield b64encode(iv + ecipher.encrypt(s.encode())).decode("utf-8")
+            yield b64encode(iv + cipher.encrypt(s.encode())).decode("utf-8")
             step += 1
 
     def decrypt(self, encrypted_text):
@@ -54,7 +54,7 @@ class AESCipher(object):
         return self.__unpad(plain_text)
 
     def decode_file_yield(self, encrypted_text):
-        encrypted_text = b64decode(encrypted_text)
+        data = b64decode(encrypted_text)
         iv = encrypted_text[:self.block_size]
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         step = 0
