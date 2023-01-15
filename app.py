@@ -48,10 +48,14 @@ def _get_file():
     if file.filename == '':
         flash('No selected file')
         return redirect(request.url)
-    if file and _allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    # Check if the user selected a file with allowed extension
+    if not file or not _allowed_file(file.filename):
+        flash('Not an allowed file extension')
+        return redirect(request.url)
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     return filename
+
 
 
 @app.route('/generate_keys', methods=['POST'])
