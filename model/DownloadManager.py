@@ -43,8 +43,12 @@ class DownloadManager:
         )
 
     def _encode_aes_stream(self, name, key):
+        print(str(key))
+        key = str(rsa.PublicKey.load_pkcs1(key.read()))
         cipher = aes.AESCipher(key)
-        encoded = cipher.encode_file_yield(path.join(self.upload_folder, name))
+        filename = path.join(self.upload_folder, name)
+        data = open(filename).read()
+        encoded = cipher.encode_file_yield(data)
         return Response(
             stream_with_context(encoded),
             headers={
@@ -62,6 +66,8 @@ class DownloadManager:
         end = time.perf_counter()
         filename = Path(filename)
         encoded_filename = filename.with_stem(f'encoded_{filename.stem}')
+        # with open(encoded_filename, 'wb+') as encoded_file:
+        #     encoded_file.write(bytes(encrypted_data, 'utf-8'))
         with open(encoded_filename, 'wb+') as encoded_file:
             encoded_file.write(bytes(encrypted_data, 'utf-8'))
         flash(f'{name} encoding time: {end - start}')
@@ -72,11 +78,14 @@ class DownloadManager:
         filename = path.join(self.upload_folder, name)
         data = open(filename, encoding='utf-8').read()
         cipher = aes.AESCipher(key)
+        # cipher.set_master_key(key)
         start = time.perf_counter()
         decrypted_data = cipher.decrypt(data)
         end = time.perf_counter()
         filename = Path(filename)
         decoded_filename = filename.with_stem(f'decoded_{filename.stem}')
+        # with open(decoded_filename, 'wb+') as decoded_file:
+        #     decoded_file.write(bytes(decrypted_data, 'utf-8'))
         with open(decoded_filename, 'wb+') as decoded_file:
             decoded_file.write(bytes(decrypted_data, 'utf-8'))
         flash(f'{name} decoding time: {end - start}')
@@ -100,8 +109,11 @@ class DownloadManager:
         )
 
     def _decode_aes_stream(self, name, key):
+        key = str(rsa.PublicKey.load_pkcs1(key.read()))
         cipher = aes.AESCipher(key)
-        decoded = cipher.decode_file_yield(path.join(self.upload_folder, name))
+        filename = path.join(self.upload_folder, name)
+        data = open(filename, encoding="utf8").read()
+        decoded = cipher.decode_file_yield(data)
         return Response(
             stream_with_context(decoded),
             headers={
