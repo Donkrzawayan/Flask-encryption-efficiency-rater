@@ -72,37 +72,49 @@ class DownloadManager:
         )
 
     def _encode_aes(self, name, key):
-        key = str(rsa.PublicKey.load_pkcs1(key.read()))
+        #key = str(rsa.PublicKey.load_pkcs1(key.read()))
         filename = path.join(self.upload_folder, name)
-        data = open(filename, mode="rb").read()
-        cipher = aes.AESCipher(key)
+        # data = open(filename, mode="rb").read()
+        # cipher = aes.AESCipher(key)
         start = time.perf_counter()
-        encrypted_data = cipher.encrypt(data)
+        #encrypted_data = cipher.encrypt(data)
+        my_key = "This_key_for_demo_purposes_only!"
+        mode = AESModeOfOperationCTR(bytes(my_key, encoding='utf-8'))
+        encrypter = Encrypter(mode, padding=PADDING_DEFAULT)
+        encrypted_data = _feed_stream(encrypter, open(filename, mode="rb"), BLOCK_SIZE)
         end = time.perf_counter()
         filename = Path(filename)
         encoded_filename = filename.with_stem(f'encoded_{filename.stem}')
         # with open(encoded_filename, 'wb+') as encoded_file:
         #     encoded_file.write(bytes(encrypted_data, 'utf-8'))
         with open(encoded_filename, 'wb+') as encoded_file:
-            encoded_file.write(bytes(encrypted_data, 'utf-8'))
+            #encoded_file.write(bytes(encrypted_data, 'utf-8'))
+            for data in encrypted_data:
+                encoded_file.write(data)
         flash(f'{name} encoding time: {end - start}')
         return send_from_directory(self.upload_folder, encoded_filename.name)
 
     def _decode_aes(self, name, key):
         key = str(rsa.PublicKey.load_pkcs1(key.read()))
         filename = path.join(self.upload_folder, name)
-        data = open(filename, mode="rb").read()
-        cipher = aes.AESCipher(key)
+        # data = open(filename, mode="rb").read()
+        # cipher = aes.AESCipher(key)
         # cipher.set_master_key(key)
         start = time.perf_counter()
-        decrypted_data = cipher.decrypt(data)
+        my_key = "This_key_for_demo_purposes_only!"
+        mode = AESModeOfOperationCTR(bytes(my_key, encoding='utf-8'))
+        decrypter = Decrypter(mode, padding = PADDING_DEFAULT)
+        decrypted_data = _feed_stream(decrypter, open(filename, mode="rb"), BLOCK_SIZE)
+        #decrypted_data = cipher.decrypt(data)
         end = time.perf_counter()
         filename = Path(filename)
         decoded_filename = filename.with_stem(f'decoded_{filename.stem}')
         # with open(decoded_filename, 'wb+') as decoded_file:
         #     decoded_file.write(bytes(decrypted_data, 'utf-8'))
         with open(decoded_filename, 'wb+') as decoded_file:
-            decoded_file.write(bytes(decrypted_data, 'utf-8'))
+            #decoded_file.write(bytes(decrypted_data, 'utf-8'))
+            for data in decrypted_data:
+                decoded_file.write(data)
         flash(f'{name} decoding time: {end - start}')
         return send_from_directory(self.upload_folder, decoded_filename.name)
 
