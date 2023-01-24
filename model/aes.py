@@ -403,10 +403,14 @@ class AESCipher(object):
             # RSA encryption returns a tuple containing 1 string, so i fetch the string.
             if step == 0:
                 print("First chunk")
-                yield b64encode(iv + cipher.encrypt(s.encode())).decode("utf-8")
+                to_return = b64encode(iv + cipher.encrypt(s.encode())).decode("utf-8")
+                print(to_return)
+                yield to_return
             else:
                 print("Normal chunk")
-                yield b64encode(cipher.encrypt(s.encode())).decode("utf-8")
+                to_return1 = b64encode(cipher.encrypt(s.encode())).decode("utf-8")
+                print(to_return1)
+                yield to_return1
             step += 1
 
 

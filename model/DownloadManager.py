@@ -6,7 +6,13 @@ import rsa
 from flask import send_from_directory, Response, stream_with_context, flash
 
 from model import rsa2048, aes
+from model.aespyaes import  AESModeOfOperationCTR
+from model.blockfeeder import _feed_stream, Decrypter, Encrypter
 
+
+
+BLOCK_SIZE = (1 << 13)
+PADDING_DEFAULT    = 'default'
 
 class DownloadManager:
     def __init__(self, upload_folder):
@@ -43,12 +49,21 @@ class DownloadManager:
         )
 
     def _encode_aes_stream(self, name, key):
-        print(str(key))
-        key = str(rsa.PublicKey.load_pkcs1(key.read()))
-        cipher = aes.AESCipher(key)
+        #key = str(rsa.PublicKey.load_pkcs1(key.read()))
+        #cipher = aes.AESCipher(key)
         filename = path.join(self.upload_folder, name)
-        data = open(filename).read()
-        encoded = cipher.encode_file_yield(data)
+        # data = open(filename).read()
+        # encoded = cipher.encode_file_yield(data)
+        # return Response(
+        #     stream_with_context(encoded),
+        #     headers={
+        #         'Content-Disposition': f'attachment; filename={name}'
+        #     }
+        # )
+        my_key = "This_key_for_demo_purposes_only!"
+        mode = AESModeOfOperationCTR(bytes(my_key, encoding='utf-8'))
+        encrypter = Encrypter(mode, padding=PADDING_DEFAULT)
+        encoded = _feed_stream(encrypter, open(filename, mode="rb"), BLOCK_SIZE)
         return Response(
             stream_with_context(encoded),
             headers={
@@ -59,7 +74,7 @@ class DownloadManager:
     def _encode_aes(self, name, key):
         key = str(rsa.PublicKey.load_pkcs1(key.read()))
         filename = path.join(self.upload_folder, name)
-        data = open(filename).read()
+        data = open(filename, mode="rb").read()
         cipher = aes.AESCipher(key)
         start = time.perf_counter()
         encrypted_data = cipher.encrypt(data)
@@ -76,7 +91,7 @@ class DownloadManager:
     def _decode_aes(self, name, key):
         key = str(rsa.PublicKey.load_pkcs1(key.read()))
         filename = path.join(self.upload_folder, name)
-        data = open(filename, encoding='utf-8').read()
+        data = open(filename, mode="rb").read()
         cipher = aes.AESCipher(key)
         # cipher.set_master_key(key)
         start = time.perf_counter()
@@ -109,11 +124,23 @@ class DownloadManager:
         )
 
     def _decode_aes_stream(self, name, key):
-        key = str(rsa.PublicKey.load_pkcs1(key.read()))
-        cipher = aes.AESCipher(key)
+        #key = str(rsa.PublicKey.load_pkcs1(key.read()))
+        #cipher = aes.AESCipher(key)
         filename = path.join(self.upload_folder, name)
-        data = open(filename, encoding="utf8").read()
-        decoded = cipher.decode_file_yield(data)
+        my_key = "This_key_for_demo_purposes_only!"
+        #data = open(filename, encoding="utf8").read()
+        # decoded = cipher.decode_file_yield(data)
+        # return Response(
+        #     stream_with_context(decoded),
+        #     headers={
+        #         'Content-Disposition': f'attachment; filename={name}'
+        #     }
+        # )
+
+        # Create the mode of operation to encrypt with
+        mode = AESModeOfOperationCTR(bytes(my_key, encoding='utf-8'))
+        decrypter = Decrypter(mode, padding = PADDING_DEFAULT)
+        decoded = _feed_stream(decrypter, open(filename, mode="rb"), BLOCK_SIZE)
         return Response(
             stream_with_context(decoded),
             headers={
