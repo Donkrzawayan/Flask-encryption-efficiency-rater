@@ -2,7 +2,7 @@ import os
 import secrets
 import time
 
-from flask import Flask, render_template, request, flash, redirect, send_from_directory, send_file, session
+from flask import Flask, render_template, request, flash, redirect, send_from_directory, send_file, session, Response
 from flask_session import Session
 from werkzeug.utils import secure_filename
 
@@ -55,6 +55,16 @@ def _get_file():
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     return filename
+
+
+@app.route('/generate_key', methods=['POST'])
+def generate_key():
+    key = os.urandom(32)
+    return Response(
+        key,
+        mimetype='text/plain',
+        headers={'Content-disposition': 'attachment; filename=aes.key'}
+    )
 
 
 @app.route('/generate_keys', methods=['POST'])

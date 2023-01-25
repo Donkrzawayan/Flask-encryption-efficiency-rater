@@ -20,6 +20,12 @@
         </form>
     </div>
     <div>
+        <h2>Generate key for AES</h2>
+        <form method="post" action="/generate_key">
+            <button>Download aes.key</button>
+        </form>
+    </div>
+    <div>
         <h2>Encode and upload new File</h2>
         <form method="post" enctype="multipart/form-data" action="/upload">
             Key: <input type="file" name="key">
