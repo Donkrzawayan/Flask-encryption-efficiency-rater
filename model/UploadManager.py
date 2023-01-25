@@ -14,9 +14,12 @@ class UploadManager:
         self.upload_folder = upload_folder
         self.decode_types = {
             'encode_rsa': self._encode_rsa,
+            'encode_rsa_stream': self._encode_rsa_stream,
             'encode_aes': self._encode_aes,
             'decode_rsa': self._decode_rsa,
-            'decode_aes': self._decode_aes
+            'decode_rsa_stream': self._decode_rsa_stream,
+            'decode_aes': self._decode_aes,
+            #'decode_aes_stream': self._decode_aes_stream
         }
 
     def caller(self, key, *args):
@@ -28,6 +31,15 @@ class UploadManager:
         end = time.perf_counter()
         flash(f'{name} encoding time: {end - start}')
         return Path(filename).name
+
+    def _encode_rsa_stream(self, name, key):
+        pathname = Path(path.join(self.upload_folder, name))
+        encoded_filename = pathname.with_stem(f'encoded_{pathname.stem}')
+        encoded = rsa2048.encode_file_yield(key, pathname)
+        with open(encoded_filename, 'wb+') as encoded_file:
+            for chunk in encoded:
+                encoded_file.write(chunk)
+        return encoded_filename.name
 
     def _decode_rsa(self, name, key):
         start = time.perf_counter()
@@ -63,3 +75,12 @@ class UploadManager:
             decoded_file.write(decrypted_data)
         flash(f'{name} decoding time: {end - start}')
         return decoded_filename.name
+
+    def _decode_rsa_stream(self, name, key):
+        pathname = Path(path.join(self.upload_folder, name))
+        encoded_filename = pathname.with_stem(f'encoded_{pathname.stem}')
+        encoded = rsa2048.decode_file_yield(key, pathname)
+        with open(encoded_filename, 'wb+') as encoded_file:
+            for chunk in encoded:
+                encoded_file.write(chunk)
+        return encoded_filename.name
