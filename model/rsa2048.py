@@ -26,7 +26,7 @@ def encode_file(public_key, input_file):
 
 
 def encode_file_yield(public_key, input_file):
-    public_key = rsa.PublicKey.load_pkcs1(public_key.read())
+    public_key = rsa.PublicKey.load_pkcs1(public_key)
     data = open(input_file, 'rb').read()
     step = 0
     while True:
@@ -59,7 +59,7 @@ def decode_file(private_key, input_file):
 
 
 def decode_file_yield(private_key, input_file):
-    private_key = rsa.PrivateKey.load_pkcs1(private_key.read())
+    private_key = rsa.PrivateKey.load_pkcs1(private_key)
     data = open(input_file, mode='rb').read()
     step = 0
     while True:

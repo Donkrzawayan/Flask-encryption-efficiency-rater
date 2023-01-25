@@ -33,7 +33,7 @@ class DownloadManager:
 
     def _encode_rsa(self, name, key):
         start = time.perf_counter()
-        filename = rsa2048.encode_file(key.read(), path.join(self.upload_folder, name))
+        filename = rsa2048.encode_file(key, path.join(self.upload_folder, name))
         end = time.perf_counter()
         filename = Path(filename).name
         flash(f'{name} encoding time: {end - start}')
@@ -49,10 +49,8 @@ class DownloadManager:
         )
 
     def _encode_aes_stream(self, name, key):
-        # key = str(rsa.PublicKey.load_pkcs1(key.read()))
         filename = path.join(self.upload_folder, name)
-        my_key = "This_key_for_demo_purposes_only!"
-        mode = AESModeOfOperationCTR(bytes(my_key, encoding='utf-8'))
+        mode = AESModeOfOperationCTR(key)
         encrypter = Encrypter(mode, padding=PADDING_DEFAULT)
         encoded = _feed_stream(encrypter, open(filename, mode="rb"), BLOCK_SIZE)
         return Response(
@@ -92,7 +90,7 @@ class DownloadManager:
 
     def _decode_rsa(self, name, key):
         start = time.perf_counter()
-        filename = rsa2048.decode_file(key.read(), path.join(self.upload_folder, name))
+        filename = rsa2048.decode_file(key, path.join(self.upload_folder, name))
         end = time.perf_counter()
         filename = Path(filename).name
         flash(f'{name} decoding time: {end - start}')
@@ -108,12 +106,8 @@ class DownloadManager:
         )
 
     def _decode_aes_stream(self, name, key):
-        # key = str(rsa.PublicKey.load_pkcs1(key.read()))
         filename = path.join(self.upload_folder, name)
-        my_key = "This_key_for_demo_purposes_only!"
-
-        # Create the mode of operation to encrypt with
-        mode = AESModeOfOperationCTR(bytes(my_key, encoding='utf-8'))
+        mode = AESModeOfOperationCTR(key)
         decrypter = Decrypter(mode, padding=PADDING_DEFAULT)
         decoded = _feed_stream(decrypter, open(filename, mode="rb"), BLOCK_SIZE)
         return Response(
