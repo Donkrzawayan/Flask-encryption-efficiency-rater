@@ -6,9 +6,8 @@ from flask import Flask, render_template, request, flash, redirect, send_from_di
 from flask_session import Session
 from werkzeug.utils import secure_filename
 
-from model import rsa2048
-from model.DownloadManager import DownloadManager
-from model.UploadManager import UploadManager
+import model
+from model import UploadManager, DownloadManager
 
 app = Flask(__name__)
 
@@ -69,7 +68,7 @@ def generate_key():
 
 @app.route('/generate_keys', methods=['POST'])
 def generate_keys():
-    zip = rsa2048.generate_keys()
+    zip = model.generate_keys()
     return send_file(
         zip,
         mimetype='application/zip',
