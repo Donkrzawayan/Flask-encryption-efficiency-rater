@@ -109,7 +109,7 @@ def download_file(name):
 
 
 @app.route('/file/<name>', methods=['POST'])
-def decode(name):
+def download(name):
     key = _get_key(f'/file/{name}').read()
     select = request.form['encrypt_types']
     start = time.perf_counter()

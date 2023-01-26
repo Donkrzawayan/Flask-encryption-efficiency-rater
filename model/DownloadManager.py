@@ -2,16 +2,11 @@ import time
 from os import path
 from pathlib import Path
 
-import rsa
 from flask import send_from_directory, Response, stream_with_context, flash
 
 from model import rsa2048
-
-from model.aespyaes import AESModeOfOperationCTR
-from model.blockfeeder import _feed_stream, Decrypter, Encrypter
-
-BLOCK_SIZE = (1 << 13)
-PADDING_DEFAULT = 'default'
+from model.pyaes import AESModeOfOperationCTR, Encrypter, Decrypter, PADDING_DEFAULT
+from model.pyaes.blockfeeder import BLOCK_SIZE, _feed_stream
 
 
 class DownloadManager:

@@ -5,11 +5,8 @@ from pathlib import Path
 from flask import flash
 
 from model import rsa2048
-from model.aespyaes import AESModeOfOperationCTR
-from model.blockfeeder import Encrypter, _feed_stream, Decrypter
-
-BLOCK_SIZE = (1 << 13)
-PADDING_DEFAULT = 'default'
+from model.pyaes import AESModeOfOperationCTR, Encrypter, Decrypter, PADDING_DEFAULT
+from model.pyaes.blockfeeder import BLOCK_SIZE, _feed_stream
 
 
 class UploadManager:

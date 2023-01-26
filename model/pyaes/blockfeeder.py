@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 
-from .aespyaes import AESBlockModeOfOperation, AESSegmentModeOfOperation, AESStreamModeOfOperation
+from .aes import AESBlockModeOfOperation, AESSegmentModeOfOperation, AESStreamModeOfOperation
 from .util import append_PKCS7_padding, strip_PKCS7_padding, to_bufferable
 
 
@@ -219,7 +219,6 @@ def _feed_stream(feeder, in_stream, block_size = BLOCK_SIZE):
         if not chunk:
             break
         converted = feeder.feed(chunk)
-        #print(type(converted))
         yield converted
     converted = feeder.feed()
     yield converted
