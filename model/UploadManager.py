@@ -2,11 +2,14 @@ import time
 from os import path
 from pathlib import Path
 
-import rsa
 from flask import flash
 
 from model import rsa2048
 from model.aespyaes import AESModeOfOperationCTR
+from model.blockfeeder import Encrypter, _feed_stream, Decrypter
+
+BLOCK_SIZE = (1 << 13)
+PADDING_DEFAULT = 'default'
 
 
 class UploadManager:
@@ -16,10 +19,11 @@ class UploadManager:
             'encode_rsa': self._encode_rsa,
             'encode_rsa_stream': self._encode_rsa_stream,
             'encode_aes': self._encode_aes,
+            'encode_aes_stream': self._encode_aes_stream,
             'decode_rsa': self._decode_rsa,
             'decode_rsa_stream': self._decode_rsa_stream,
             'decode_aes': self._decode_aes,
-            #'decode_aes_stream': self._decode_aes_stream
+            'decode_aes_stream': self._decode_aes_stream
         }
 
     def caller(self, key, *args):
@@ -33,9 +37,20 @@ class UploadManager:
         return Path(filename).name
 
     def _encode_rsa_stream(self, name, key):
-        pathname = Path(path.join(self.upload_folder, name))
-        encoded_filename = pathname.with_stem(f'encoded_{pathname.stem}')
-        encoded = rsa2048.encode_file_yield(key, pathname)
+        filename = Path(path.join(self.upload_folder, name))
+        encoded_filename = filename.with_stem(f'encoded_{filename.stem}')
+        encoded = rsa2048.encode_file_yield(key, filename)
+        with open(encoded_filename, 'wb+') as encoded_file:
+            for chunk in encoded:
+                encoded_file.write(chunk)
+        return encoded_filename.name
+
+    def _encode_aes_stream(self, name, key):
+        filename = Path(path.join(self.upload_folder, name))
+        encoded_filename = filename.with_stem(f'encoded_{filename.stem}')
+        mode = AESModeOfOperationCTR(key)
+        encrypter = Encrypter(mode, padding=PADDING_DEFAULT)
+        encoded = _feed_stream(encrypter, open(filename, mode="rb"), BLOCK_SIZE)
         with open(encoded_filename, 'wb+') as encoded_file:
             for chunk in encoded:
                 encoded_file.write(chunk)
@@ -77,10 +92,22 @@ class UploadManager:
         return decoded_filename.name
 
     def _decode_rsa_stream(self, name, key):
-        pathname = Path(path.join(self.upload_folder, name))
-        encoded_filename = pathname.with_stem(f'encoded_{pathname.stem}')
-        encoded = rsa2048.decode_file_yield(key, pathname)
-        with open(encoded_filename, 'wb+') as encoded_file:
+        filename = Path(path.join(self.upload_folder, name))
+        decoded_filename = filename.with_stem(f'decoded_{filename.stem}')
+        encoded = rsa2048.decode_file_yield(key, filename)
+        with open(decoded_filename, 'wb+') as decoded_file:
             for chunk in encoded:
-                encoded_file.write(chunk)
-        return encoded_filename.name
+                decoded_file.write(chunk)
+        return decoded_filename.name
+
+    def _decode_aes_stream(self, name, key):
+        filename = Path(path.join(self.upload_folder, name))
+        decoded_filename = filename.with_stem(f'decoded_{filename.stem}')
+        mode = AESModeOfOperationCTR(key)
+        decrypter = Decrypter(mode, padding=PADDING_DEFAULT)
+        decoded = _feed_stream(decrypter, open(filename, mode="rb"), BLOCK_SIZE)
+        with open(decoded_filename, 'wb+') as decoded_file:
+            for chunk in decoded:
+                decoded_file.write(chunk)
+        return decoded_filename.name
+
