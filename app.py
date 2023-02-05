@@ -104,7 +104,11 @@ def uploaded_file(name):
 
 @app.route('/file/<name>/download')
 def download_file(name):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], name)
+    start = time.perf_counter()
+    send = send_from_directory(app.config['UPLOAD_FOLDER'], name)
+    end = time.perf_counter()
+    flash(f'{name} downloading time: {end - start}')
+    return send
 
 
 @app.route('/file/<name>', methods=['POST'])
@@ -122,7 +126,10 @@ def download(name):
 def index():
     upload_folder = app.config['UPLOAD_FOLDER']
     if request.method == 'POST':
-        _get_file()
+        start = time.perf_counter()
+        filename = _get_file()
+        end = time.perf_counter()
+        flash(f'{filename} uploading time: {end - start}')
     filenames = [f for f in os.listdir(upload_folder) if os.path.isfile(os.path.join(upload_folder, f))]
     return render_template('uploaded.html', filenames=filenames) if filenames else render_template('index.html')
 
