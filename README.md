@@ -9,7 +9,7 @@ A modified [pyaes](https://github.com/ricmoo/pyaes) library was used for streami
 
 ```python
 def _feed_stream(feeder, in_stream, block_size=BLOCK_SIZE):
-    """Uses feeder to read and convert from in_stream and write to out_stream."""
+    """Uses feeder to read and convert from in_stream and yield it."""
 
     while True:
         chunk = in_stream.read(block_size)
