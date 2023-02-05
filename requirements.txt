@@ -1,6 +1,5 @@
 Flask>=2.2.0
 Werkzeug
 rsa
-pycryptodomex
 MarkupSafe
 Flask-Session
